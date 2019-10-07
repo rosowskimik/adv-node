@@ -7,8 +7,9 @@ client.get = util.promisify(client.get);
 
 const exec = mongoose.Query.prototype.exec;
 
-mongoose.Query.prototype.cache = function() {
+mongoose.Query.prototype.cache = function(expTime = 900) {
   this.useCache = true;
+  this.expTime = expTime;
   return this;
 };
 
@@ -32,6 +33,6 @@ mongoose.Query.prototype.exec = async function() {
   }
 
   const result = await exec.apply(this, arguments);
-  client.set(key, JSON.stringify(result));
+  client.set(key, JSON.stringify(result), 'EX', this.expTime);
   return result;
 };
